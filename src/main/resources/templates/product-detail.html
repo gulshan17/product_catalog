@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${product.title} + ' - Product Catalog'">Product Detail</title>
+</head>
+<body>
+    <main>
+        <div class="container py-4">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" th:if="${breadcrumbs != null and not #lists.isEmpty(breadcrumbs)}">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/products" class="text-decoration-none">
+                            <i class="bi bi-house"></i> Products
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item" th:each="crumb, iterStat : ${breadcrumbs}">
+                        <span th:text="${crumb.name}" class="text-muted">Category</span>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${product.title}">
+                        Product Name
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <!-- Product Images -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="position-relative">
+                            <img th:src="${product.images != null and product.images.size() > 0 ? product.images[0].imageUrl : 'https://via.placeholder.com/600x400?text=No+Image'}" 
+                                 class="card-img-top" 
+                                 style="height: 400px; object-fit: cover;"
+                                 th:alt="${product.title}">
+                            
+                            <!-- Image Gallery Thumbnails -->
+                            <div th:if="${product.images != null and product.images.size() > 1}" 
+                                 class="position-absolute bottom-0 start-0 p-3">
+                                <div class="d-flex gap-2">
+                                    <img th:each="image, iterStat : ${product.images}" 
+                                         th:if="${iterStat.index < 4}"
+                                         th:src="${image.imageUrl}" 
+                                         class="rounded border bg-white" 
+                                         style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                                         th:alt="${image.altText}"
+                                         onclick="changeMainImage(this.src)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Information -->
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <span class="badge bg-primary fs-6 mb-2" th:text="${product.brand?.name}">Brand</span>
+                        <h1 class="display-6 mb-3" th:text="${product.title}">Product Title</h1>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <span class="display-4 text-primary fw-bold" 
+                              th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p class="text-muted" th:text="${product.description}">Product description goes here...</p>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="mb-4" th:if="${product.categories != null and not #lists.isEmpty(product.categories)}">
+                        <h6>Categories</h6>
+                        <div>
+                            <span th:each="category : ${product.categories}" 
+                                  class="badge bg-light text-dark me-2 mb-1">
+                                <i class="bi bi-tag"></i>
+                                <span th:text="${category.name}">Category</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Product Actions -->
+                    <div class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-secondary btn-lg w-100">
+                                    <i class="bi bi-heart"></i> Add to Wishlist
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="bi bi-info-circle"></i> Product Details
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <strong>Product ID:</strong>
+                                </div>
+                                <div class="col-sm-8" th:text="${product.id}">
+                                    #123
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <strong>Brand:</strong>
+                                </div>
+                                <div class="col-sm-8" th:text="${product.brand?.name ?: 'N/A'}">
+                                    Brand Name
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <strong>Availability:</strong>
+                                </div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-success">In Stock</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="bi bi-grid text-primary"></i> You might also like
+                    </h3>
+                    <div class="row">
+                        <!-- Placeholder for related products -->
+                        <div class="col-md-3 mb-4" th:each="i : ${#numbers.sequence(1, 4)}">
+                            <div class="card">
+                                <img src="https://via.placeholder.com/250x200?text=Related+Product" 
+                                     class="card-img-top" style="height: 150px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h6 class="card-title">Related Product</h6>
+                                    <p class="text-muted small">$99.99</p>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Products -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <a href="/products" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Products
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript for image gallery -->
+        <script>
+            function changeMainImage(src) {
+                const mainImage = document.querySelector('.card-img-top');
+                mainImage.src = src;
+            }
+        </script>
+    </main>
+</body>
+</html>

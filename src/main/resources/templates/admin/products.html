@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Manage Products - Admin</title>
+</head>
+<body>
+    <main>
+        <div class="container-fluid py-4">
+            <div class="row">
+                <!-- Admin Sidebar -->
+                <div class="col-lg-2">
+                    <div class="admin-sidebar p-3">
+                        <h5 class="text-white mb-3">
+                            <i class="bi bi-speedometer2"></i> Admin Panel
+                        </h5>
+                        <nav class="nav flex-column">
+                            <a class="nav-link" href="/admin">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                            <a class="nav-link active" href="/admin/products">
+                                <i class="bi bi-box"></i> Products
+                            </a>
+                            <a class="nav-link" href="/admin/categories">
+                                <i class="bi bi-tags"></i> Categories
+                            </a>
+                            <a class="nav-link" href="/admin/brands">
+                                <i class="bi bi-award"></i> Brands
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-lg-10">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="display-6 mb-2">
+                                <i class="bi bi-box text-primary"></i> Manage Products
+                            </h1>
+                            <p class="text-muted">Add, edit, and manage your product catalog</p>
+                        </div>
+                        <div>
+                            <a href="/admin/products/new" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Add New Product
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="mb-0">Products List</h5>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="text-muted">Total: <strong th:text="${products.size()}">0</strong> products</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Image</th>
+                                            <th>Title</th>
+                                            <th>Brand</th>
+                                            <th>Categories</th>
+                                            <th>Price</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="product : ${products}">
+                                            <td>
+                                                <span class="badge bg-light text-dark" th:text="${product.id}">#1</span>
+                                            </td>
+                                            <td>
+                                                <img th:src="${product.images != null and product.images.size() > 0 ? product.images[0].imageUrl : 'https://via.placeholder.com/50x50?text=No+Image'}" 
+                                                     class="rounded" 
+                                                     style="width: 50px; height: 50px; object-fit: cover;"
+                                                     th:alt="${product.title}">
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong th:text="${product.title}">Product Title</strong>
+                                                    <br>
+                                                    <small class="text-muted" th:text="${product.slug}">product-slug</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" th:text="${product.brand?.name ?: 'No Brand'}">Brand</span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <span th:each="category, iterStat : ${product.categories}" 
+                                                          class="badge bg-light text-dark me-1 mb-1">
+                                                        <span th:text="${category.name}">Category</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</strong>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{'/products/' + ${product.slug}}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       target="_blank"
+                                                       title="View Product">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}" 
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       title="Edit Product">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Delete Product"
+                                                            onclick="confirmDelete(this)"
+                                                            th:data-product-id="${product.id}"
+                                                            th:data-product-title="${product.title}">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div th:if="${#lists.isEmpty(products)}" class="text-center py-5">
+                        <i class="bi bi-box display-1 text-muted"></i>
+                        <h3 class="mt-3 text-muted">No products found</h3>
+                        <p class="text-muted">Start by adding your first product to the catalog.</p>
+                        <a href="/admin/products/new" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add First Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle text-danger"></i> Confirm Delete
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the product "<strong id="productTitle"></strong>"?</p>
+                        <p class="text-muted small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete Product
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function confirmDelete(button) {
+                const productId = button.getAttribute('data-product-id');
+                const productTitle = button.getAttribute('data-product-title');
+                
+                document.getElementById('productTitle').textContent = productTitle;
+                document.getElementById('deleteForm').action = `/admin/products/${productId}/delete`;
+                
+                const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                modal.show();
+            }
+        </script>
+    </main>
+</body>
+</html>
