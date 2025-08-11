@@ -24,6 +24,19 @@ spring:
     host: redis
     port: 6379
     timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+    connect-timeout: 60000ms
+    
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000
+      cache-null-values: false
     
 server:
   port: 8080

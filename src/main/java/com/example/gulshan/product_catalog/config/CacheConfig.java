@@ -20,30 +20,40 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // Default cache configuration
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+        try {
+            // Test Redis connection
+            connectionFactory.getConnection().ping();
+            
+            // Default cache configuration
+            RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                    .entryTtl(Duration.ofMinutes(30))
+                    .serializeValuesWith(RedisSerializationContext.SerializationPair
+                            .fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
-        // Specific cache configurations with different TTLs
-        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        
-        // Product detail page cache - 30 minutes TTL
-        cacheConfigurations.put("products", RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer())));
-        
-        // Filter metadata cache - 60 minutes TTL
-        cacheConfigurations.put("filters", RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(60))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer())));
+            // Specific cache configurations with different TTLs
+            Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+            
+            // Product detail page cache - 30 minutes TTL
+            cacheConfigurations.put("products", RedisCacheConfiguration.defaultCacheConfig()
+                    .entryTtl(Duration.ofMinutes(30))
+                    .serializeValuesWith(RedisSerializationContext.SerializationPair
+                            .fromSerializer(new GenericJackson2JsonRedisSerializer())));
+            
+            // Filter metadata cache - 60 minutes TTL
+            cacheConfigurations.put("filters", RedisCacheConfiguration.defaultCacheConfig()
+                    .entryTtl(Duration.ofMinutes(60))
+                    .serializeValuesWith(RedisSerializationContext.SerializationPair
+                            .fromSerializer(new GenericJackson2JsonRedisSerializer())));
 
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(defaultConfig)
-                .withInitialCacheConfigurations(cacheConfigurations)
-                .build();
+            System.out.println("Redis connection successful - using Redis cache manager");
+            return RedisCacheManager.builder(connectionFactory)
+                    .cacheDefaults(defaultConfig)
+                    .withInitialCacheConfigurations(cacheConfigurations)
+                    .build();
+        } catch (Exception e) {
+            System.err.println("Redis connection failed: " + e.getMessage());
+            System.err.println("Falling back to no-op cache manager");
+            return new org.springframework.cache.support.NoOpCacheManager();
+        }
     }
 }

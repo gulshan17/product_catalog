@@ -54,7 +54,7 @@ public class ProductService {
             .collect(Collectors.toList());
     }
     
-    // @Cacheable(value = "products", key = "#slug") // Temporarily disabled for debugging
+    @Cacheable(value = "products", key = "#slug")
     public ProductDetailDTO getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
             .orElseThrow(() -> new EntityNotFoundException("Product not found: " + slug));
@@ -62,8 +62,9 @@ public class ProductService {
         return convertToDetailDTO(product);
     }
     
+    @Cacheable(value = "filters", key = "#keyword + '_' + #brandId + '_' + #categoryId + '_' + #page + '_' + #limit")
     public ProductSearchResponseDTO searchProducts(String keyword, Long brandId, 
-                                                  Long categoryId, int page, int limit) {
+                                                   Long categoryId, int page, int limit) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<Product> products = productRepository.searchProducts(keyword, brandId, categoryId, pageable);
         
@@ -123,6 +124,7 @@ public class ProductService {
     }
     
     @Transactional
+    @CacheEvict(value = {"products", "filters"}, allEntries = true)
     public Product createProduct(CreateProductDTO dto) {
         Product product = new Product();
         product.setTitle(dto.getTitle());
@@ -150,6 +152,7 @@ public class ProductService {
     }
     
     @Transactional
+    @CacheEvict(value = {"products", "filters"}, allEntries = true)
     public Product updateProduct(Long id, UpdateProductDTO dto) {
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));
@@ -161,6 +164,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = {"products", "filters"}, allEntries = true)
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }

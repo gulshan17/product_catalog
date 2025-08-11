@@ -28,7 +28,7 @@ A complete e-commerce product catalog system with both REST API and web UI, feat
 
 ## 🏗️ Architecture
 
-- **Backend**: Spring Boot 3.5.4 with Java 24
+- **Backend**: Spring Boot 3.5.4 with Java 21
 - **Database**: MySQL 8.0 with JPA/Hibernate
 - **Caching**: Redis 7 with configurable TTL
 - **Containerization**: Docker & Docker Compose
@@ -53,10 +53,11 @@ A complete e-commerce product catalog system with both REST API and web UI, feat
 
 ### Prerequisites
 - Docker and Docker Compose
-- Java 24 (for local development)
+- Java 21 (for local development)
 - Maven (for local development)
 
 ### Running with Docker (Recommended)
+No local JDK or Maven required. The multi-stage Docker build compiles the app inside the container.
 ```bash
 # Clone the repository
 git clone <repository-url>
